@@ -9,18 +9,39 @@ import { excluirReuniao, listarReunioes } from '../components/database/banco';
 export default function Principal() {
   const [reunioes, setReunioes] = useState([]);
 
-
-
-  useEffect(() => {
-    const fetchData = async () => {
+  const carregarReunioes = async () => {
+    try {
       const data = await listarReunioes();
       setReunioes(data);
-    };
-    fetchData().catch((erro) => console.log("Problema na listagem:", erro));
+    } catch (erro) {
+      console.log("Problema na listagem:", erro);
+    }
+  };
+
+  useEffect(() => {
+    carregarReunioes();
   }, []);
 
   const geraAta = (numero) => {
-    Alert.alert("Sucesso!", "Ata de Nº " + numero + " exportada para a pasta 'Minha_Atas'.");
+    Alert.alert("Sucesso!", "Ata de Nº " + numero + " exportada para a pasta 'Minhas_Atas'.");
+  };
+
+  const confirmarExclusao = (id, reset) => {
+    Alert.alert("Atenção!", "Deseja realmente excluir essa reunião?", [
+      {
+        text: "Sim",
+        onPress: async () => {
+          await excluirReuniao(id);
+          carregarReunioes();
+          reset();
+        },
+      },
+      {
+        text: "Não",
+        onPress: () => reset(),
+        style: 'cancel',
+      }
+    ]);
   };
 
   return (
@@ -31,92 +52,82 @@ export default function Principal() {
           <ThemedButton
             name="rick"
             type="primary"
-            textSize={30}
-            height={70}
-            width={250}
+            textSize={25}
+            height={60}
+            width={240}
             onPress={() => router.push("/reuniao")}
             backgroundDarker='#65727a'
             backgroundColor='#bec3bc'
             textColor='black'
             backgroundActive='#d7dacf'
-            backgroundProgress="gray"
-          >Nova Reunião</ThemedButton>
+            style={estilo.botao}
+          >
+            Nova Reunião
+          </ThemedButton>
 
           <ThemedButton
             name="rick"
             type="primary"
-            textSize={30}
-            height={70}
-            width={250}
+            textSize={25}
+            height={60}
+            width={240}
             onPress={() => router.push("/membros")}
             backgroundDarker='#65727a'
             backgroundColor='#bec3bc'
             textColor='black'
             backgroundActive='#d7dacf'
-            backgroundProgress="gray"
-            style={estilo.secondButton}
-          >Membros</ThemedButton>
+            style={estilo.botao}
+          >
+            Membros
+          </ThemedButton>
         </View>
       </View>
 
       <View style={estilo.line} />
 
       <View style={estilo.section2}>
-
-
-        <FlatList
-          data={reunioes}
-          extraData={reunioes}
-          renderItem={({ item }) =>
-            <ListItem.Swipeable
-              leftWidth={90}
-              rightWidth={90}
-
-              leftContent={(reset) => (
-                <Button
-                  title="Gerar Ata"
-                  onPress={() => { geraAta(item.numero); reset(); }}
-                  buttonStyle={{ minHeight: '100%', backgroundColor: 'gray' }}
-
-                />
-              )}
-              rightContent={(reset) => (
-                <Button
-                  title="Excluir"
-                  buttonStyle={{ minHeight: '100%', backgroundColor: '#D6184F', fontWeight: 'bold' }}
-                  onPress={() => {
-                    Alert.alert("Atenção!", "Deseja realmente excluir essa reunião?", [
-                      {
-                        text: "Sim",
-                        onPress: () => {
-                          excluirReuniao(item.id);
-                          router.replace("/principal");
-                          reset();
-                        },
-
-                      },
-                      {
-                        text: "Não",
-                        onPress: () => { reset() },
-                        style: 'cancel'
-                      }
-                    ])
-                  }}
-                  color={"red"}
-
-                  titleStyle={{ fontWeight: "600" }}
-                />
-              )}
-            >
-              <ListItem.Content>
-                <ListItem.Title style={estilo.listItemTitle}>Nº{item.numero} | {item.local}</ListItem.Title>
-                <ListItem.Subtitle style={estilo.listItemSubtitle}>{item.grau}</ListItem.Subtitle>
-              </ListItem.Content>
-            </ListItem.Swipeable>}
-
-          keyExtractor={item => item.id}
-        />
-
+        {reunioes.length === 0 ? (
+          <Text style={estilo.vazioTexto}>Nenhuma reunião cadastrada.</Text>
+        ) : (
+          <FlatList
+            data={reunioes}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => (
+              <View style={estilo.swipeWrapper}>
+                <ListItem.Swipeable
+                  leftWidth={90}
+                  rightWidth={90}
+                  containerStyle={estilo.listItemBase}
+                  leftContent={(reset) => (
+                    <Button
+                      title="Gerar Ata"
+                      onPress={() => { geraAta(item.numero); reset(); }}
+                      buttonStyle={{ minHeight: '100%', backgroundColor: '#6c757d' }}
+                      titleStyle={{ fontSize: 15 }}
+                    />
+                  )}
+                  rightContent={(reset) => (
+                    <Button
+                      title="Excluir"
+                      onPress={() => confirmarExclusao(item.id, reset)}
+                      buttonStyle={{ minHeight: '100%', backgroundColor: '#D6184F' }}
+                      titleStyle={{ fontWeight: '600', fontSize: 15}}
+                    />
+                  )}
+                >
+                  <ListItem.Content>
+                    <ListItem.Title style={estilo.listItemTitle}>
+                      Nº {item.numero} | {item.local}
+                    </ListItem.Title>
+                    <ListItem.Subtitle style={estilo.listItemSubtitle}>
+                      {item.grau}
+                    </ListItem.Subtitle>
+                  </ListItem.Content>
+                </ListItem.Swipeable>
+              </View>
+            )}
+          />
+        )}
       </View>
     </SafeAreaView>
   );
@@ -128,41 +139,62 @@ const estilo = StyleSheet.create({
     backgroundColor: "#e6e8e3",
   },
   section: {
-    flex: 0.5,
+    paddingTop: 10,
+    paddingBottom: 20,
   },
   section2: {
     flex: 1,
+    paddingHorizontal: 10,
+    paddingBottom: 10,
   },
   title: {
-    paddingTop: 10,
     alignSelf: "center",
     fontWeight: 'bold',
-    fontSize: 40,
-    color: 'black',
+    fontSize: 36,
+    color: '#2c2c2c',
+    marginBottom: 10,
   },
   buttonContainer: {
-    flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
+    gap: 16,
+    marginTop: 10,
+  },
+  botao: {
+    borderRadius: 14,
   },
   line: {
     height: 3,
     backgroundColor: 'darkgray',
     width: '100%',
+    marginBottom: 10,
   },
-  secondButton: {
-    marginTop: 20,
+  swipeWrapper: {
+    marginVertical: 6,
+    borderRadius: 12,
+    overflow: 'hidden', 
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
   },
-  listItemContainer: {
-    backgroundColor: 'white', // Cor de fundo do item
-    borderRadius: 10, // Bordas arredondadas
-    marginVertical: 5, // Espaçamento vertical entre os itens
-    padding: 10, // Espaçamento interno
+  listItemBase: {
+    backgroundColor: 'white',
+    padding: 10,
   },
   listItemTitle: {
     fontWeight: 'bold',
+    fontSize: 18,
+    color: '#222',
   },
   listItemSubtitle: {
     color: 'gray',
+    fontSize: 16,
+  },
+  vazioTexto: {
+    textAlign: 'center',
+    marginTop: 30,
+    fontSize: 16,
+    color: '#555',
   },
 });

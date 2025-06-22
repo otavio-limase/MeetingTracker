@@ -95,13 +95,14 @@ export async function inserirMembro(nome, numero, frequencia, grau, status) {
     return id;
 }
 
-export async function atualizarMembro(id, nome, numero, frequencia, grau, status) {
+export async function atualizarMembro(id, nome, numero, grau, status) {
+    console.log("Chegou", numero)
     const banco = await abrirBanco();
     const dados = await banco.runAsync(`
         UPDATE membros 
-        SET nome = ?, numero = ?, frequencia = ?, grau = ?, status = ?
+        SET nome = ?, numero = ?, grau = ?, status = ?
         WHERE id = ?`, 
-        [nome, numero, frequencia, grau, status, id]
+        [nome, numero, grau, status, id]
     );
     console.log(dados.changes);
     return true;

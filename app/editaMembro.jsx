@@ -1,25 +1,41 @@
-import { router } from "expo-router";
+import { Button } from "@rneui/themed";
+import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
-import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
-import { ThemedButton } from "react-native-really-awesome-button";
+import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, View, } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { inserirMembro } from "../components/database/banco";
+import { atualizarMembro, excluirMembro } from "../components/database/banco";
 
-export default function Reuniao() {
-    const [nome, setNome] = useState("");
-    const [numero, setNumero] = useState("");
-    const [grau, setGrau] = useState("");
-    const [status, setStatus] = useState("Regular");
+export default function EditarMembro() {
+    const item = useLocalSearchParams();
+
+    const [nome, setNome] = useState(item.nome);
+    const [numero, setNumero] = useState(item.numero);
+    const [grau, setGrau] = useState(item.grau);
+    const [status, setStatus] = useState(item.status || "Regular");
 
     async function chamaBanco() {
-        if (numero && grau && nome && status) {
-            await inserirMembro(nome, numero, 0, grau, status);
-            Alert.alert("Sucesso!", "Membro inserido.");
+        if (numero && grau && nome && status && item.id) {
+            await atualizarMembro(item.id, nome, numero, grau, status);
+            Alert.alert("Sucesso!", "Membro atualizado.");
             router.replace("/membros");
         } else {
             Alert.alert("Atenção!", "Dados inválidos ou em branco.");
         }
     }
+
+    const confirmarExclusao = () => {
+        Alert.alert("Confirmação", "Deseja realmente remover este membro?", [
+            { text: "Cancelar", style: "cancel" },
+            {
+                text: "Excluir", style: "destructive", onPress: () => {
+                    excluirMembro(item.id);
+                    Alert.alert("Sucesso!", "O membro "+item.nome+" foi excluido.")
+                    router.replace("/membros");
+
+                }
+            },
+        ]);
+    };
 
     return (
         <SafeAreaView style={styles.safeArea}>
@@ -29,7 +45,7 @@ export default function Reuniao() {
             >
                 <ScrollView contentContainerStyle={styles.scroll}>
                     <View style={styles.card}>
-                        <Text style={styles.title}>Adicionar Membro</Text>
+                        <Text style={styles.title}>Editar Membro</Text>
 
                         <TextInput
                             placeholder="Nome"
@@ -60,29 +76,26 @@ export default function Reuniao() {
                             style={styles.input}
                             placeholderTextColor="#888"
                         />
-
-                        <View style={{ alignSelf: "center" }}>
-                            <ThemedButton
-                                name="rick"
-                                type="primary"
-                                textSize={20}
-                                style={{ marginTop: 24 }}
-                                height={56}
-                                width={240}
-                                onPress={chamaBanco}
-                                backgroundDarker="#65727a"
-                                backgroundColor="#bec3bc"
-                                textColor="#000"
-                                backgroundActive="#d7dacf"
-                                backgroundProgress="gray"
-                                borderRadius={14}
-                            >
-                                Salvar
-                            </ThemedButton>
-                        </View>
                     </View>
                 </ScrollView>
             </KeyboardAvoidingView>
+
+            <View style={styles.buttonRow}>
+                <Button
+                    title="Salvar"
+                    onPress={chamaBanco}
+                    buttonStyle={[styles.button, styles.saveBtn]}
+                    containerStyle={styles.buttonContainer}
+                    titleStyle={styles.buttonText}
+                />
+                <Button
+                    title="Excluir"
+                    onPress={confirmarExclusao}
+                    buttonStyle={[styles.button, styles.deleteBtn]}
+                    containerStyle={styles.buttonContainer}
+                    titleStyle={styles.buttonText}
+                />
+            </View>
         </SafeAreaView>
     );
 }
@@ -123,5 +136,31 @@ const styles = StyleSheet.create({
         marginBottom: 16,
         backgroundColor: "#f9faf8",
         fontSize: 16,
+    },
+    /* ---------- área dos botões ---------- */
+    buttonRow: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        paddingHorizontal: 20,
+        paddingBottom: 100,
+        backgroundColor: "#e6e8e3",
+    },
+    buttonContainer: {
+        flex: 1,
+        marginHorizontal: 6,
+    },
+    button: {
+        borderRadius: 14,
+        paddingVertical: 12,
+    },
+    saveBtn: {
+        backgroundColor: "#4CAF50",
+    },
+    deleteBtn: {
+        backgroundColor: "#D6184F", // vermelho forte
+    },
+    buttonText: {
+        fontSize: 18,
+        fontWeight: "600",
     },
 });

@@ -33,12 +33,19 @@ export default function Pilha() {
               />
             </View>)
         }} />
+
       <Stack.Screen
         name="adicionaMembro"
         options={{ headerShown: false }} />
 
       <Stack.Screen
         name="reuniao"
+        options={{ headerShown: false }} />
+      <Stack.Screen
+        name="verMembro"
+        options={{ headerShown: false }} />
+      <Stack.Screen
+        name="editaMembro"
         options={{ headerShown: false }} />
     </Stack>
   )

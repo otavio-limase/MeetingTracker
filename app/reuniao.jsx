@@ -1,6 +1,15 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Alert, StyleSheet, Text, TextInput, View } from 'react-native';
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { ThemedButton } from 'react-native-really-awesome-button';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { inserirReuniao } from '../components/database/banco';
@@ -16,51 +25,124 @@ export default function Reuniao() {
   const [observacoes, setObservacoes] = useState('');
   const [membrosParticipantes, setMembrosParticipantes] = useState([]);
 
-
-
   async function chamaBanco() {
-    if (numero && grau && data && local && horarioInicio && horarioFim && topicos && observacoes && membrosParticipantes) {
-      console.log("chegou");
-      console.log("Inserindo no banco");
-      recebido = await inserirReuniao(data, numero, grau, local, horarioInicio, horarioFim, topicos, observacoes, membrosParticipantes);
-      Alert.alert("Sucesso!", "Reunião inserida.")
-      router.replace({ pathname: '/principal' });
+    if (
+      numero &&
+      grau &&
+      data &&
+      local &&
+      horarioInicio &&
+      horarioFim &&
+      topicos.length &&
+      observacoes &&
+      membrosParticipantes.length
+    ) {
+      await inserirReuniao(
+        data,
+        numero,
+        grau,
+        local,
+        horarioInicio,
+        horarioFim,
+        topicos,
+        observacoes,
+        membrosParticipantes
+      );
+      Alert.alert('Sucesso!', 'Reunião inserida.');
+      router.replace('/principal');
     } else {
-      Alert.alert("Atenção!", "Dados inválidos ou em branco.")
+      Alert.alert('Atenção!', 'Dados inválidos ou em branco.');
     }
   }
 
   return (
     <SafeAreaView style={estilo.container}>
-      <Text style={estilo.title}>Adicionar Reunião</Text>
-      <TextInput placeholder="Número" value={numero} onChangeText={setNumero} style={estilo.input} />
-      <TextInput placeholder="Grau" value={grau} onChangeText={setGrau} style={estilo.input} />
-      <TextInput placeholder="Data" value={data} onChangeText={setData} style={estilo.input} />
-      <TextInput placeholder="Local" value={local} onChangeText={setLocal} style={estilo.input} />
-      <TextInput placeholder="Horário de Início" value={horarioInicio} onChangeText={setHorarioInicio} style={estilo.input} />
-      <TextInput placeholder="Horário de Fim" value={horarioFim} onChangeText={setHorarioFim} style={estilo.input} />
-      <TextInput placeholder="Tópicos (X, Y, Z)" value={topicos.join(', ')} onChangeText={(text) => setTopicos(text.split(',').map(num => num.trim()))} style={estilo.input} />
-      <TextInput placeholder="Observações" value={observacoes} onChangeText={setObservacoes} style={estilo.input} />
-      <TextInput
-        placeholder="Números dos participantes (X, Y, Z)"
-        value={membrosParticipantes.join(', ')}
-        onChangeText={(text) => setMembrosParticipantes(text.split(',').map(num => num.trim()))}
-        style={estilo.input}
-      />
-      <View style={{ alignSelf: "center", marginTop: 20 }}>
-        <ThemedButton
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <ScrollView contentContainerStyle={estilo.scroll}>
+          <Text style={estilo.title}>Adicionar Reunião</Text>
 
-          name="rick"
-          type="primary"
-          textSize={30}
-          height={70}
-          width={250}
-          onPress={chamaBanco}
-          backgroundDarker='#65727a'
-          backgroundColor='#bec3bc'
-          textColor='black'
-          backgroundActive='#d7dacf'
-        >Salvar</ThemedButton></View>
+          <TextInput
+            placeholder="Número"
+            value={numero}
+            onChangeText={setNumero}
+            style={estilo.input}
+          />
+          <TextInput
+            placeholder="Grau"
+            value={grau}
+            onChangeText={setGrau}
+            style={estilo.input}
+          />
+          <TextInput
+            placeholder="Data"
+            value={data}
+            onChangeText={setData}
+            style={estilo.input}
+          />
+          <TextInput
+            placeholder="Local"
+            value={local}
+            onChangeText={setLocal}
+            style={estilo.input}
+          />
+          <TextInput
+            placeholder="Horário de Início"
+            value={horarioInicio}
+            onChangeText={setHorarioInicio}
+            style={estilo.input}
+          />
+          <TextInput
+            placeholder="Horário de Fim"
+            value={horarioFim}
+            onChangeText={setHorarioFim}
+            style={estilo.input}
+          />
+          <TextInput
+            placeholder="Tópicos (X, Y, Z)"
+            value={topicos.join(', ')}
+            onChangeText={(text) =>
+              setTopicos(text.split(',').map((t) => t.trim()))
+            }
+            style={estilo.input}
+          />
+          <TextInput
+            placeholder="Observações"
+            value={observacoes}
+            onChangeText={setObservacoes}
+            style={estilo.input}
+            multiline
+          />
+          <TextInput
+            placeholder="Números dos participantes (X, Y, Z)"
+            value={membrosParticipantes.join(', ')}
+            onChangeText={(text) =>
+              setMembrosParticipantes(text.split(',').map((n) => n.trim()))
+            }
+            style={estilo.input}
+          />
+
+          <View style={estilo.botaoWrapper}>
+            <ThemedButton
+              name="rick"
+              type="primary"
+              textSize={20}
+              height={60}
+              width={240}
+              onPress={chamaBanco}
+              backgroundDarker="#65727a"
+              backgroundColor="#bec3bc"
+              textColor="black"
+              backgroundActive="#d7dacf"
+              borderRadius={14}
+            >
+              Salvar
+            </ThemedButton>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -68,19 +150,31 @@ export default function Reuniao() {
 const estilo = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
     backgroundColor: '#e6e8e3',
   },
+  scroll: {
+    padding: 20,
+    paddingBottom: 40,
+  },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 26,
+    fontWeight: '700',
     marginBottom: 20,
+    textAlign: 'center',
+    color: '#333',
   },
   input: {
-    height: 40,
-    borderColor: 'gray',
+    height: 48,
+    borderRadius: 12,
     borderWidth: 1,
-    marginBottom: 15,
-    paddingHorizontal: 10,
+    borderColor: '#c2c5be',
+    paddingHorizontal: 14,
+    marginBottom: 16,
+    backgroundColor: '#f9faf8',
+    fontSize: 16,
+  },
+  botaoWrapper: {
+    alignItems: 'center',
+    marginTop: 20,
   },
 });

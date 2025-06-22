@@ -5,7 +5,8 @@ import { FlatList, StyleSheet, View } from 'react-native';
 import { listarMembros } from '../components/database/banco';
 
 function verMembro(item) {
-  router.push({ pathname: '/verMembro', item });
+
+  router.push({ pathname: '/verMembro', params: item });
 
 }
 
