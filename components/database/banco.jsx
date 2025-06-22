@@ -72,7 +72,20 @@ export async function atualizarReuniao(id, numero, grau, data, local, horarioIni
 
 export async function listarReunioes() {
     const banco = await abrirBanco();
-    const reunioes = await banco.getAllAsync("SELECT * FROM reunioes");
+    const reunioes = await banco.getAllAsync(`
+    SELECT
+      id,
+      numero,
+      grau,
+      data,
+      local,
+      horario_inicio  AS horarioInicio,
+      horario_fim     AS horarioFim,
+      topicos,
+      observacoes,
+      membros_participantes AS membrosParticipantes
+    FROM reunioes
+  `);
     return reunioes;
 }
 

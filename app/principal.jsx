@@ -1,9 +1,13 @@
 import { Button, ListItem } from '@rneui/base';
+import * as FileSystem from "expo-file-system";
+import * as Print from "expo-print";
 import { router } from 'expo-router';
+import * as Sharing from "expo-sharing";
 import { useEffect, useState } from 'react';
 import { Alert, FlatList, StyleSheet, Text, View } from 'react-native';
 import { ThemedButton } from 'react-native-really-awesome-button';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import ataHTML from "../app/ata/ataTemplate";
 import { excluirReuniao, listarReunioes } from '../components/database/banco';
 
 export default function Principal() {
@@ -22,8 +26,43 @@ export default function Principal() {
     carregarReunioes();
   }, []);
 
-  const geraAta = (numero) => {
-    Alert.alert("Sucesso!", "Ata de Nº " + numero + " exportada para a pasta 'Minhas_Atas'.");
+ const ensureDir = async () => {
+    const dir = FileSystem.documentDirectory + "Minhas_Atas";
+    const dirInfo = await FileSystem.getInfoAsync(dir);
+    if (!dirInfo.exists) {
+      await FileSystem.makeDirectoryAsync(dir, { intermediates: true });
+    }
+    return dir;
+  };
+
+  
+  const geraAta = async (reuniao) => {
+    try {
+      const html = ataHTML(reuniao);
+
+     
+      const { uri } = await Print.printToFileAsync({ html });
+
+      
+      const dir = await ensureDir();
+      const dest = `${dir}/Ata_${reuniao.numero}.pdf`;
+      await FileSystem.moveAsync({ from: uri, to: dest });
+
+      
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(dest, {
+          dialogTitle: `Enviar Ata Nº ${reuniao.numero}`,
+        });
+      }
+
+      Alert.alert(
+        "Sucesso!",
+        `Ata Nº ${reuniao.numero} salva em Minhas_Atas.`
+      );
+    } catch (e) {
+      console.log(e);
+      Alert.alert("Erro", "Não foi possível gerar a ata.");
+    }
   };
 
   const confirmarExclusao = (id, reset) => {
@@ -101,7 +140,7 @@ export default function Principal() {
                   leftContent={(reset) => (
                     <Button
                       title="Gerar Ata"
-                      onPress={() => { geraAta(item.numero); reset(); }}
+                      onPress={() => { geraAta(item); reset(); }}
                       buttonStyle={{ minHeight: '100%', backgroundColor: '#6c757d' }}
                       titleStyle={{ fontSize: 15 }}
                     />
