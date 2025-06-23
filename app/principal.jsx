@@ -94,7 +94,7 @@ export default function Principal() {
             textSize={25}
             height={60}
             width={240}
-            onPress={() => router.push("/reuniao")}
+            onPress={() => router.replace("/reuniao")}
             backgroundDarker='#65727a'
             backgroundColor='#bec3bc'
             textColor='black'

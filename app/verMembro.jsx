@@ -12,11 +12,11 @@ export default function verMembro() {
     console.log("Editar membro");
     console.log(item)
     
-    router.push({ pathname: '/editaMembro', params: item});
+    router.replace({ pathname: '/editaMembro', params: item});
   };
 
   const voltar = () => {
-    router.back();
+    router.replace('/membros');
   };
 
 

@@ -6,7 +6,7 @@ import { listarMembros } from '../components/database/banco';
 
 function verMembro(item) {
 
-  router.push({ pathname: '/verMembro', params: item });
+  router.replace({ pathname: '/verMembro', params: item });
 
 }
 

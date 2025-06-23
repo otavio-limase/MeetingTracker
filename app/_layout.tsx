@@ -22,14 +22,25 @@ export default function Pilha() {
         name="membros"
         options={{
           title: "Lista de Membros",
+          headerLeft: () => (
+            <View
+              style={{ width: 60, height: 50}}>
+              <AntDesign
+                name="arrowleft"
+                size={46}
+                color="gray"
+                onPress={() => router.back()}
+              />
+            </View>),
+
           headerRight: () => (
             <View
               style={{ width: 50, height: 50 }}>
               <AntDesign
                 name="pluscircleo"
                 size={46}
-                color="black"
-                onPress={() => router.push('../adicionaMembro')}
+                color="gray"
+                onPress={() => router.replace('../adicionaMembro')}
               />
             </View>)
         }} />
